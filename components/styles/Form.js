@@ -22,7 +22,7 @@ const Form = styled.form`
   font-weight: 600;
   label {
     display: block;
-    margin-bottom: 1rem;
+    margin-bottom: .5rem;
   }
   input,
   textarea,
@@ -31,6 +31,8 @@ const Form = styled.form`
     padding: 0.5rem;
     font-size: 1rem;
     border: 1px solid black;
+		margin-bottom: 1rem;
+
     &:focus {
       outline: 0;
       border-color: ${props => props.theme.red};
