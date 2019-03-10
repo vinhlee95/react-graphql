@@ -1,3 +1,2 @@
-# Advanced-React
-
-frontend
+# Shopping list
+React client app for Prisma GraphQL server
