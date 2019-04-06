@@ -19,11 +19,15 @@ const CREATE_ITEM = gql`
 		$title: String!
 		$description: String!
 		$price: Int!
+		$image: String
+		$largeImage: String
 	) {
 		createItem(
 			title: $title
 			description: $description
 			price: $price
+			image: $image
+			largeImage: $largeImage
 		) {
 			id
 		}
@@ -32,28 +36,77 @@ const CREATE_ITEM = gql`
 
 export class CreateItem extends React.Component {
 	state = {
-		title: '',
-		description: '',
-		price: '',
+		item : {
+			title: '',
+			description: '',
+			price: '',
+			image: '',
+			largeImage: '',
+		},
+		imageUploading: false,
+		imageUploadingError: null,
 	}
 
 	handleChange = (e) => {
 		const { name, value } = e.target;
-		this.setState({ [name]: value })
+		this.setState({
+			item: {
+				...this.state.item,
+				[name]: value
+			}
+		})
 	}
 
 	handleCreateItem = (e, createItem) => {
 		e.preventDefault()
-		createItem({ variables: this.state })
+		createItem({ variables: this.state.item })
+	}
+
+	handleUploadImage = async (e) => {
+		const files = e.target.files
+		const data = new FormData()
+		data.append('file', files[0])
+		data.append('upload_preset', 'fitStore')
+		this.setState({
+			imageUploading: true,
+		})
+
+		try {
+			const res = await fetch('https://api.cloudinary.com/v1_1/ds2t6ps9w/image/upload', {
+				method: 'POST',
+				body: data
+			})
+
+			const file = await res.json()
+			if(!file) {
+				this.setState({ imageUploadingError: 'There is something wrong' })
+				return
+			}
+
+			const image = file.secure_url
+			const largeImage = file.eager[0].secure_url
+			this.setState({
+				item: {
+					...this.state.item,
+					image,
+					largeImage,
+				},
+				imageUploading: false,
+			})
+
+		} catch(error) {
+			this.setState({ imageUploadingError: error, imageUploading: false })
+		}
+
 	}
 
 	render() {
-		const { title, description, price } = this.state;
+		const { item: {title, description, price, image}, imageUploading } = this.state;
 
 		return(
 			<Mutation
 				mutation={CREATE_ITEM}
-				variables={this.state}
+				variables={this.state.item}
 			>
 				{
 					(createItem, { loading, error }) => (
@@ -80,6 +133,23 @@ export class CreateItem extends React.Component {
 									onChange={this.handleChange}
 									placeholder='Description'
 								/>
+
+								<label>Image</label>
+								<input
+									type='file'
+									name='image'
+									onChange={this.handleUploadImage}
+								/>
+								{
+									imageUploading ?
+									<p>Uploading...</p>
+									: null
+								}
+								{
+									image ?
+									<img src={image} width='200' height='200' />
+									: null
+								}
 
 								<label>Price</label>
 								<input

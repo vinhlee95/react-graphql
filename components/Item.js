@@ -25,7 +25,11 @@ export class Item extends React.Component {
 				<Title>{title}</Title>
 				<PriceTag>{price}</PriceTag>
 				<p>{description}</p>
-
+				{
+					image ?
+					<img src={image} width='100' height='100' />
+					: null
+				}
         <div className="buttonList">
           <Link
             href={{
